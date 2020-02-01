@@ -5,7 +5,7 @@ import "log"
 
 import cli "gopkg.in/urfave/cli.v2"
 
-import "github.com/nlewo/contrail-introspect-cli/utils"
+import "github.com/tu-pm/contrail-introspect-cli/utils"
 
 func Follow() *cli.Command {
 	return &cli.Command{

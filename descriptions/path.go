@@ -4,7 +4,7 @@ import "fmt"
 import "gopkg.in/urfave/cli.v2"
 import "log"
 
-import "github.com/nlewo/contrail-introspect-cli/utils"
+import "github.com/tu-pm/contrail-introspect-cli/utils"
 
 func Path() *cli.Command {
 	return &cli.Command{

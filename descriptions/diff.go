@@ -5,7 +5,7 @@ import (
 	"log"
 	"os"
 
-	"github.com/nlewo/contrail-introspect-cli/collection"
+	"github.com/tu-pm/contrail-introspect-cli/collection"
 )
 import cli "gopkg.in/urfave/cli.v2"
 

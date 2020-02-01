@@ -5,8 +5,8 @@ import "log"
 import "github.com/jbowtie/gokogiri/xml"
 import "github.com/gosuri/uitable"
 
-import "github.com/nlewo/contrail-introspect-cli/utils"
-import "github.com/nlewo/contrail-introspect-cli/collection"
+import "github.com/tu-pm/contrail-introspect-cli/utils"
+import "github.com/tu-pm/contrail-introspect-cli/collection"
 
 func CtrlIfmap() collection.DescCollection {
 	return collection.DescCollection{
