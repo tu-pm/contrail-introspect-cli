@@ -201,6 +201,21 @@ func Mpls() collection.DescCollection {
 	}
 }
 
+func Vxlan() collection.DescCollection {
+	return collection.DescCollection{
+		PageArgs: []string{"vrouter-fqdn"},
+		PageBuilder: func(args []string) collection.Sourcer {
+			return collection.Remote{Table: "db.vxlan.0", VrouterUrl: args[0], Port: 8085}
+		},
+		BaseXpath: "__VxLanResp_list/VxLanResp/vxlan_list/list",
+		DescElt: collection.DescElement{
+			ShortDetailXpath: "vxlan_id/text()",
+			LongDetail:       collection.LongFormatFn(vxlanDetail),
+		},
+		PrimaryField: "vxlan_id",
+	}
+}
+
 func routeDetail(t *uitable.Table, e collection.Element) {
 	srcIp, _ := e.Node.Search("src_ip/text()")
 	srcPrefix, _ := e.Node.Search("src_plen/text()")
@@ -216,7 +231,7 @@ func routeDetail(t *uitable.Table, e collection.Element) {
 		destvn, _ := path.Search("dest_vn/text()")
 		itf, _ := path.Search("nh/NhSandeshData/itf/text()")
 		t.AddRow("    "+utils.Pretty(nhs), utils.Pretty(peers), utils.Pretty(label),
-			 utils.Pretty(pref), utils.Pretty(itf), utils.Pretty(destvn))
+			utils.Pretty(pref), utils.Pretty(itf), utils.Pretty(destvn))
 	}
 	t.AddRow("")
 }
@@ -227,6 +242,16 @@ func mplsDetail(t *uitable.Table, e collection.Element) {
 		log.Fatal(err)
 	}
 	t.AddRow(fmt.Sprintf("Label: %s", label))
+	nexthopDetail(t, e.Node)
+	t.AddRow("")
+}
+
+func vxlanDetail(t *uitable.Table, e collection.Element) {
+	vxlan_id, err := e.GetField("vxlan_id")
+	if err != nil {
+		log.Fatal(err)
+	}
+	t.AddRow(fmt.Sprintf("VxlanID: %s", vxlan_id))
 	nexthopDetail(t, e.Node)
 	t.AddRow("")
 }
