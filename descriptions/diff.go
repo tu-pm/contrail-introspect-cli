@@ -24,7 +24,7 @@ func RouteDiff() *cli.Command {
 			agent := c.Args().Get(1)
 			vrf := c.Args().Get(2)
 
-			rdesc := Route()
+			rdesc := UcRoute()
 			crdesc := CtrlRoute()
 
 			col, err := collection.LoadCollection(crdesc, []string{controller, vrf})

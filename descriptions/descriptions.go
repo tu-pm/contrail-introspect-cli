@@ -81,7 +81,7 @@ func Si() collection.DescCollection {
 	}
 }
 
-func Route() collection.DescCollection {
+func UcRoute() collection.DescCollection {
 	return collection.DescCollection{
 		PageArgs: []string{"vrouter-fqdn", "vrf-name"},
 		PageBuilder: func(args []string) collection.Sourcer {
@@ -90,10 +90,25 @@ func Route() collection.DescCollection {
 		BaseXpath: "__Inet4UcRouteResp_list/Inet4UcRouteResp/route_list/list",
 		DescElt: collection.DescElement{
 			ShortDetailXpath: "src_ip/text()",
-			LongDetail:       collection.LongFormatFn(routeDetail)},
+			LongDetail:       collection.LongFormatFn(ucRouteDetail)},
 		PrimaryField: "src_ip",
 	}
 }
+
+func L2Route() collection.DescCollection {
+	return collection.DescCollection{
+		PageArgs: []string{"vrouter-fqdn", "vrf-name"},
+		PageBuilder: func(args []string) collection.Sourcer {
+			return collection.Remote{VrouterUrl: args[0], Table: args[1] + ".l2.route.0,", Port: 8085}
+		},
+		BaseXpath: "__BridgeRouteResp_list/BridgeRouteResp/route_list/list",
+		DescElt: collection.DescElement{
+			ShortDetailXpath: "mac/text()",
+			LongDetail:       collection.LongFormatFn(l2RouteDetail)},
+		PrimaryField: "mac",
+	}
+}
+
 func Vrf() collection.DescCollection {
 	return collection.DescCollection{
 		PageArgs: []string{"vrouter-fqdn"},
@@ -108,6 +123,7 @@ func Vrf() collection.DescCollection {
 		PrimaryField: "name",
 	}
 }
+
 func Vn() collection.DescCollection {
 	return collection.DescCollection{
 		PageArgs: []string{"vrouter-fqdn"},
@@ -216,10 +232,29 @@ func Vxlan() collection.DescCollection {
 	}
 }
 
-func routeDetail(t *uitable.Table, e collection.Element) {
+func ucRouteDetail(t *uitable.Table, e collection.Element) {
 	srcIp, _ := e.Node.Search("src_ip/text()")
 	srcPrefix, _ := e.Node.Search("src_plen/text()")
 	t.AddRow(fmt.Sprintf("Src %s/%s", srcIp[0], srcPrefix[0]))
+	paths, _ := e.Node.Search("path_list/list/PathSandeshData")
+
+	t.AddRow("    Dst", "Peers", "MPLS label", "Local Pref", "Interface", "Dest VN")
+	for _, path := range paths {
+		nhs, _ := path.Search("nh/NhSandeshData//dip/text()")
+		peers, _ := path.Search("peer/text()")
+		label, _ := path.Search("label/text()")
+		pref, _ := path.Search("path_preference_data/PathPreferenceSandeshData/preference/text()")
+		destvn, _ := path.Search("dest_vn/text()")
+		itf, _ := path.Search("nh/NhSandeshData/itf/text()")
+		t.AddRow("    "+utils.Pretty(nhs), utils.Pretty(peers), utils.Pretty(label),
+			utils.Pretty(pref), utils.Pretty(itf), utils.Pretty(destvn))
+	}
+	t.AddRow("")
+}
+
+func l2RouteDetail(t *uitable.Table, e collection.Element) {
+	mac, _ := e.Node.Search("mac/text()")
+	t.AddRow(fmt.Sprintf("Src %s", mac[0]))
 	paths, _ := e.Node.Search("path_list/list/PathSandeshData")
 
 	t.AddRow("    Dst", "Peers", "MPLS label", "Local Pref", "Interface", "Dest VN")
@@ -247,11 +282,11 @@ func mplsDetail(t *uitable.Table, e collection.Element) {
 }
 
 func vxlanDetail(t *uitable.Table, e collection.Element) {
-	vxlan_id, err := e.GetField("vxlan_id")
+	vxlanID, err := e.GetField("vxlan_id")
 	if err != nil {
 		log.Fatal(err)
 	}
-	t.AddRow(fmt.Sprintf("VxlanID: %s", vxlan_id))
+	t.AddRow(fmt.Sprintf("VxlanID: %s", vxlanID))
 	nexthopDetail(t, e.Node)
 	t.AddRow("")
 }

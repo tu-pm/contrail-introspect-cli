@@ -27,8 +27,8 @@ func Follow() *cli.Command {
 			ip := c.Args().Get(2)
 
 			fmt.Printf("1. Starting on %s for the route %s in the vrf %s\n", c.Args().Get(0), ip, c.Args().Get(1))
-			page := Route().PageBuilder(c.Args().Slice())
-			col, e := page.Load(Route())
+			page := UcRoute().PageBuilder(c.Args().Slice())
+			col, e := page.Load(UcRoute())
 			if e != nil {
 				log.Fatal(e)
 			}
